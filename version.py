@@ -8,3 +8,6 @@ module_config = ""
 year = 2022
 website = "https://godotengine.org"
 docs = "3.5"
+
+def dump():
+    print(f'{major}.{minor}.{patch}.{status}')

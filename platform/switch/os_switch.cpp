@@ -49,6 +49,8 @@
 #include <netinet/in.h>
 #include <stdio.h>
 
+#include <iostream>
+
 #define ENABLE_NXLINK
 
 #ifndef ENABLE_NXLINK
@@ -165,10 +167,11 @@ Error OS_Switch::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	input = memnew(InputDefault);
 	input->set_emulate_mouse_from_touch(true);
 	// TODO: handle joypads/joycons status
-	for (int i = 0; i < 8; i++) {
-		input->joy_connection_changed(i, true, "pad" + (char)i, "");
-	}
-	joypad = memnew(JoypadSwitch(input));
+	//for (int i = 0; i < 8; i++) {
+	//	input->joy_connection_changed(i, true, "pad" + (char)i);
+	//}
+	
+	//joypad = memnew(JoypadSwitch(input));
 
 	power_manager = memnew(PowerSwitch);
 
@@ -192,7 +195,7 @@ void OS_Switch::delete_main_loop() {
 
 void OS_Switch::finalize() {
 	memdelete(input);
-	memdelete(joypad);
+	//memdelete(joypad);
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(power_manager);
@@ -380,12 +383,24 @@ void OS_Switch::key(uint32_t p_key, bool p_pressed) {
 };
 
 void OS_Switch::run() {
+
+	std::cout << "OS_Switch::run" << std::endl;
+
 	if (!main_loop) {
 		TRACE("no main loop???\n");
 		return;
 	}
 
 	main_loop->init();
+
+	std::cout << "padConfigureInput" << std::endl;
+
+    // Configure our supported input layout: a single player with standard controller styles
+    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+
+    // Initialize the default gamepad (which reads handheld mode inputs as well as the first connected controller)
+    PadState pad;
+    padInitializeDefault(&pad);
 
 	swkbdInlineLaunchForLibraryApplet(&inline_keyboard, SwkbdInlineMode_AppletDisplay, 0);
 	swkbdInlineSetChangedStringCallback(&inline_keyboard, keyboard_string_changed_callback);
@@ -456,8 +471,19 @@ void OS_Switch::run() {
 			}
 		}
 
-		joypad->process();
-		input->flush_buffered_events();
+		//joypad->process();
+
+		padUpdate(&pad);
+        u64 kDown = padGetButtonsDown(&pad);
+
+		if(kDown)
+			std::cout << "button down(" << kDown << ")" << std::endl;
+
+		//HidAnalogStickState leftStick = padGetStickPos(&pad,0);
+		//HidAnalogStickState rightStick = padGetStickPos(&pad,0);
+
+        if (kDown & HidNpadButton_Plus)
+            break; // break in order to return to hbmenu
 
 		swkbdInlineUpdate(&inline_keyboard, NULL);
 
