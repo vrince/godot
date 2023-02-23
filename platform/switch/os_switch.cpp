@@ -50,6 +50,8 @@
 #include <stdio.h>
 
 #include <iostream>
+#include <vector>
+#include <array>
 
 #define ENABLE_NXLINK
 
@@ -165,7 +167,8 @@ Error OS_Switch::initialize(const VideoMode &p_desired, int p_video_driver, int 
 	visual_server->init();
 
 	input = memnew(InputDefault);
-	input->set_emulate_mouse_from_touch(true);
+	input->set_use_accumulated_input(false);
+	//input->set_emulate_mouse_from_touch(true);
 	// TODO: handle joypads/joycons status
 	//for (int i = 0; i < 8; i++) {
 	//	input->joy_connection_changed(i, true, "pad" + (char)i);
@@ -382,6 +385,38 @@ void OS_Switch::key(uint32_t p_key, bool p_pressed) {
 	input->parse_input_event(ev);
 };
 
+
+std::vector< std::array<uint,2> > switch_button_map = {
+	{HidNpadButton_A, JOY_DS_A},
+	{HidNpadButton_B, JOY_DS_B},
+    {HidNpadButton_X, JOY_DS_X},
+    {HidNpadButton_Y, JOY_DS_Y},
+    //{HidNpadButton_StickL, JOY_DS_B}, capture button ?
+    //{HidNpadButton_StickR, JOY_DS_B}, home button ?
+    {HidNpadButton_L, JOY_L},
+    {HidNpadButton_R, JOY_R},
+    {HidNpadButton_ZL, JOY_L2},
+    {HidNpadButton_ZR, JOY_R2},
+    {HidNpadButton_Plus, JOY_WII_PLUS},
+    {HidNpadButton_Minus, JOY_WII_MINUS},
+    {HidNpadButton_Left, JOY_DPAD_LEFT},
+    {HidNpadButton_Up, JOY_DPAD_UP},
+    {HidNpadButton_Right, JOY_DPAD_RIGHT},
+    {HidNpadButton_Down, JOY_DPAD_DOWN},
+    //{HidNpadButton_StickLLeft, JOY_DS_B},
+    //{HidNpadButton_StickLUp, JOY_DS_B},
+    //{HidNpadButton_StickLRight, JOY_DS_B},
+    //{HidNpadButton_StickLDown, JOY_DS_B},
+    //{HidNpadButton_StickRLeft, JOY_DS_B},
+    //{HidNpadButton_StickRUp, JOY_DS_B},
+    //{HidNpadButton_StickRRight, JOY_DS_B},
+    //{HidNpadButton_StickRDown, JOY_DS_B},
+    {HidNpadButton_LeftSL, JOY_L3},
+    {HidNpadButton_LeftSR, JOY_R3},
+    {HidNpadButton_RightSL, JOY_L3},
+    {HidNpadButton_RightSR, JOY_R3}
+	};
+
 void OS_Switch::run() {
 
 	std::cout << "OS_Switch::run" << std::endl;
@@ -396,11 +431,15 @@ void OS_Switch::run() {
 	std::cout << "padConfigureInput" << std::endl;
 
     // Configure our supported input layout: a single player with standard controller styles
-    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+    padConfigureInput(4, HidNpadStyleSet_NpadStandard);
 
-    // Initialize the default gamepad (which reads handheld mode inputs as well as the first connected controller)
-    PadState pad;
-    padInitializeDefault(&pad);
+	std::vector<PadState> pads(4, PadState());
+	
+	for(uint i = 0; i < pads.size(); i++) {
+		PadState* pad = &pads[i];
+		HidNpadIdType pad_id = HidNpadIdType(i);
+		padInitialize(pad, pad_id, HidNpadIdType_Handheld);
+	}
 
 	swkbdInlineLaunchForLibraryApplet(&inline_keyboard, SwkbdInlineMode_AppletDisplay, 0);
 	swkbdInlineSetChangedStringCallback(&inline_keyboard, keyboard_string_changed_callback);
@@ -425,7 +464,6 @@ void OS_Switch::run() {
 				st->set_pressed(false);
 				input->parse_input_event(st);
 			}
-
 			last_touch_count = 0;
 		} else {
 			if (hidGetTouchScreenStates(&touch_state, 1)) {
@@ -434,7 +472,6 @@ void OS_Switch::run() {
 					if (touch_state.count > last_touch_count) {
 						for (int i = last_touch_count; i < touch_state.count; i++) {
 							Vector2 pos(touch_state.touches[i].x, touch_state.touches[i].y);
-
 							Ref<InputEventScreenTouch> st;
 							st.instance();
 							st->set_index(i);
@@ -453,6 +490,7 @@ void OS_Switch::run() {
 							input->parse_input_event(st);
 						}
 					}
+					std::cout << "touch count(" << touch_state.count << ")" << std::endl;
 				} else {
 					for (int i = 0; i < touch_state.count; i++) {
 						Vector2 pos(touch_state.touches[i].x, touch_state.touches[i].y);
@@ -466,24 +504,43 @@ void OS_Switch::run() {
 						input->parse_input_event(sd);
 					}
 				}
-
 				last_touch_count = touch_state.count;
 			}
 		}
 
-		//joypad->process();
+		bool exit = false;
 
-		padUpdate(&pad);
-        u64 kDown = padGetButtonsDown(&pad);
+		for(uint i = 0; i < pads.size(); i++) {
+			PadState* pad = &pads[i];
+			padUpdate(pad);
+			u64 kDown = padGetButtonsDown(pad);
+			u64 kUp = padGetButtonsUp(pad);
 
-		if(kDown)
-			std::cout << "button down(" << kDown << ")" << std::endl;
+			for(const auto& button : switch_button_map) {
+				if(kDown & button[0]) {
+					input->joy_button(0, button[1], true);
+					std::cout << "pad(" << i << ") button down(" << button[0] << ") --> " << button[1] << std::endl;
+
+				}
+				if(kUp & button[0]) {
+					input->joy_button(0, button[1], false);
+					std::cout << "pad(" << i << ") button up(" << button[0] << ") --> " << button[1] << std::endl;
+				}
+			}
+
+			if(kDown) {
+				std::cout << "pad(" << i << ") button down(" << kDown << ")" << std::endl;
+			}
+
+			if(kDown & HidNpadButton_Plus)
+				exit = true;
+		}
+
+		if(exit)
+			break; // break in order to return to hbmenu
 
 		//HidAnalogStickState leftStick = padGetStickPos(&pad,0);
 		//HidAnalogStickState rightStick = padGetStickPos(&pad,0);
-
-        if (kDown & HidNpadButton_Plus)
-            break; // break in order to return to hbmenu
 
 		swkbdInlineUpdate(&inline_keyboard, NULL);
 
