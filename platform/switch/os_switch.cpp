@@ -391,8 +391,8 @@ std::vector< std::array<uint,2> > switch_button_map = {
 	{HidNpadButton_B, JOY_DS_B},
     {HidNpadButton_X, JOY_DS_X},
     {HidNpadButton_Y, JOY_DS_Y},
-    //{HidNpadButton_StickL, JOY_DS_B}, capture button ?
-    //{HidNpadButton_StickR, JOY_DS_B}, home button ?
+    {HidNpadButton_StickL, JOY_L3},
+    {HidNpadButton_StickR, JOY_R3},
     {HidNpadButton_L, JOY_L},
     {HidNpadButton_R, JOY_R},
     {HidNpadButton_ZL, JOY_L2},
@@ -411,10 +411,10 @@ std::vector< std::array<uint,2> > switch_button_map = {
     //{HidNpadButton_StickRUp, JOY_DS_B},
     //{HidNpadButton_StickRRight, JOY_DS_B},
     //{HidNpadButton_StickRDown, JOY_DS_B},
-    {HidNpadButton_LeftSL, JOY_L3},
-    {HidNpadButton_LeftSR, JOY_R3},
-    {HidNpadButton_RightSL, JOY_L3},
-    {HidNpadButton_RightSR, JOY_R3}
+    //{HidNpadButton_LeftSL, JOY_L3}, //need more button
+    //{HidNpadButton_LeftSR, JOY_R3}, //need more button
+    //{HidNpadButton_RightSL, JOY_L3}, //need more button
+    //{HidNpadButton_RightSR, JOY_R3} //need more button
 	};
 
 void OS_Switch::run() {
@@ -532,15 +532,28 @@ void OS_Switch::run() {
 				std::cout << "pad(" << i << ") button down(" << kDown << ")" << std::endl;
 			}
 
+			HidAnalogStickState leftStick = pad->sticks[0];
+			HidAnalogStickState rightStick = pad->sticks[1];
+
+			input->joy_axis(i, 0, (float)(leftStick.x) / 32767.0f);
+			input->joy_axis(i, 1, (float)(-leftStick.y) / 32767.0f);
+			input->joy_axis(i, 2, (float)(rightStick.x) / 32767.0f);
+			input->joy_axis(i, 3, (float)(-rightStick.y) / 32767.0f);
+
+			if(abs(leftStick.x) > 500 || abs(leftStick.y) > 500){
+				std::cout << "pad(" << i << ") left [" << (float)leftStick.x / 32767.0f << "," << (float)leftStick.y / 32767.0f << "]" << std::endl;
+			}
+
+			if(abs(rightStick.x) > 500 || abs(rightStick.y) > 500){
+				std::cout << "pad(" << i << ") right [" << (float)rightStick.x / 32767.0f << "," << (float)rightStick.y / 32767.0f << "]" << std::endl;
+			}
+
 			if(kDown & HidNpadButton_Plus)
 				exit = true;
 		}
 
 		if(exit)
 			break; // break in order to return to hbmenu
-
-		//HidAnalogStickState leftStick = padGetStickPos(&pad,0);
-		//HidAnalogStickState rightStick = padGetStickPos(&pad,0);
 
 		swkbdInlineUpdate(&inline_keyboard, NULL);
 
