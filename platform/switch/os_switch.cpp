@@ -385,8 +385,8 @@ void OS_Switch::key(uint32_t p_key, bool p_pressed) {
 	input->parse_input_event(ev);
 };
 
-
-std::vector< std::array<uint,2> > switch_button_map = {
+//when only both joycon are use as a single controller (general case)
+std::vector< std::array<uint,2> > switch_joy_dual_button_map = {
 	{HidNpadButton_A, JOY_DS_A},
 	{HidNpadButton_B, JOY_DS_B},
     {HidNpadButton_X, JOY_DS_X},
@@ -403,23 +403,46 @@ std::vector< std::array<uint,2> > switch_button_map = {
     {HidNpadButton_Up, JOY_DPAD_UP},
     {HidNpadButton_Right, JOY_DPAD_RIGHT},
     {HidNpadButton_Down, JOY_DPAD_DOWN},
-    //{HidNpadButton_StickLLeft, JOY_DS_B},
-    //{HidNpadButton_StickLUp, JOY_DS_B},
-    //{HidNpadButton_StickLRight, JOY_DS_B},
-    //{HidNpadButton_StickLDown, JOY_DS_B},
-    //{HidNpadButton_StickRLeft, JOY_DS_B},
-    //{HidNpadButton_StickRUp, JOY_DS_B},
-    //{HidNpadButton_StickRRight, JOY_DS_B},
-    //{HidNpadButton_StickRDown, JOY_DS_B},
-    //{HidNpadButton_LeftSL, JOY_L3}, //need more button
-    //{HidNpadButton_LeftSR, JOY_R3}, //need more button
-    //{HidNpadButton_RightSL, JOY_L3}, //need more button
-    //{HidNpadButton_RightSR, JOY_R3} //need more button
-	};
+};
+
+//when only right joycon is use as a controller horizontally
+std::vector< std::array<uint,2> > switch_joy_right_button_map = {
+	{HidNpadButton_A, JOY_DS_B},
+	{HidNpadButton_B, JOY_DS_Y},
+    {HidNpadButton_X, JOY_DS_A},
+    {HidNpadButton_Y, JOY_DS_X},
+    {HidNpadButton_ZR, JOY_R2},
+    {HidNpadButton_Plus, JOY_START},
+    {HidNpadButton_StickRLeft, JOY_DPAD_UP},
+    {HidNpadButton_StickRUp, JOY_DPAD_LEFT},
+    {HidNpadButton_StickRRight, JOY_DPAD_DOWN},
+    {HidNpadButton_StickRDown, JOY_DPAD_RIGHT},
+    {HidNpadButton_RightSL, JOY_L},
+    {HidNpadButton_RightSR, JOY_R}
+};
+
+//when only left joycon is use as a controller horizontally
+std::vector< std::array<uint,2> > switch_joy_left_button_map = {
+    {HidNpadButton_ZL, JOY_L2},
+    {HidNpadButton_Minus, JOY_START},
+    {HidNpadButton_Left, JOY_DS_B},
+    {HidNpadButton_Up, JOY_DS_Y},
+    {HidNpadButton_Right, JOY_DS_X},
+    {HidNpadButton_Down, JOY_DS_A},
+    {HidNpadButton_StickLLeft, JOY_DPAD_DOWN},
+    {HidNpadButton_StickLUp, JOY_DPAD_RIGHT},
+    {HidNpadButton_StickLRight, JOY_DPAD_UP},
+    {HidNpadButton_StickLDown, JOY_DPAD_LEFT},
+    {HidNpadButton_LeftSL, JOY_L},
+    {HidNpadButton_LeftSR, JOY_R}
+};
+
+struct PadConfiguration {
+	bool initialized = false;
+	std::vector<std::array<uint,2>> mapping = {};
+};
 
 void OS_Switch::run() {
-
-	std::cout << "OS_Switch::run" << std::endl;
 
 	if (!main_loop) {
 		TRACE("no main loop???\n");
@@ -428,12 +451,10 @@ void OS_Switch::run() {
 
 	main_loop->init();
 
-	std::cout << "padConfigureInput" << std::endl;
-
-    // Configure our supported input layout: a single player with standard controller styles
     padConfigureInput(4, HidNpadStyleSet_NpadStandard);
 
 	std::vector<PadState> pads(4, PadState());
+	std::vector<PadConfiguration> pad_configurations(4,PadConfiguration());
 	
 	for(uint i = 0; i < pads.size(); i++) {
 		PadState* pad = &pads[i];
@@ -513,10 +534,34 @@ void OS_Switch::run() {
 		for(uint i = 0; i < pads.size(); i++) {
 			PadState* pad = &pads[i];
 			padUpdate(pad);
+
 			u64 kDown = padGetButtonsDown(pad);
 			u64 kUp = padGetButtonsUp(pad);
 
-			for(const auto& button : switch_button_map) {
+			if(!pad_configurations[i].initialized && kDown) {
+				pad_configurations[i].initialized = true;
+				String joy_name = "switch_pad_" + String::num(i);
+				if(pad->style_set & HidNpadStyleTag_NpadJoyLeft) {
+					pad_configurations[i].mapping = switch_joy_left_button_map;
+					joy_name += "_solo_left";
+				}
+				else if(pad->style_set & HidNpadStyleTag_NpadJoyRight) {
+					pad_configurations[i].mapping = switch_joy_right_button_map;
+					joy_name += "_solo_right";
+				}
+				else {
+					pad_configurations[i].mapping = switch_joy_dual_button_map;
+					joy_name += "_dual";
+				}
+				input->joy_connection_changed(i, true, joy_name);
+				std::cout << "joy_connection_changed pad(" << i << ") " <<
+					"read_handheld(" << pad->read_handheld << ") " <<
+					"active_handheld(" << pad->active_handheld << ") " <<
+					"attributes(" << pad->attributes << ") " <<
+					"style_set(" << pad->style_set << ")" << std::endl;
+			}
+
+			for(const auto& button : pad_configurations[i].mapping) {
 				if(kDown & button[0]) {
 					input->joy_button(0, button[1], true);
 					std::cout << "pad(" << i << ") button down(" << button[0] << ") --> " << button[1] << std::endl;
@@ -528,24 +573,14 @@ void OS_Switch::run() {
 				}
 			}
 
-			if(kDown) {
-				std::cout << "pad(" << i << ") button down(" << kDown << ")" << std::endl;
-			}
+			if(pad->style_set & HidNpadStyleTag_NpadJoyDual || pad->style_set & HidNpadStyleTag_NpadHandheld) {
+				HidAnalogStickState leftStick = pad->sticks[0];
+				HidAnalogStickState rightStick = pad->sticks[1];
 
-			HidAnalogStickState leftStick = pad->sticks[0];
-			HidAnalogStickState rightStick = pad->sticks[1];
-
-			input->joy_axis(i, 0, (float)(leftStick.x) / 32767.0f);
-			input->joy_axis(i, 1, (float)(-leftStick.y) / 32767.0f);
-			input->joy_axis(i, 2, (float)(rightStick.x) / 32767.0f);
-			input->joy_axis(i, 3, (float)(-rightStick.y) / 32767.0f);
-
-			if(abs(leftStick.x) > 500 || abs(leftStick.y) > 500){
-				std::cout << "pad(" << i << ") left [" << (float)leftStick.x / 32767.0f << "," << (float)leftStick.y / 32767.0f << "]" << std::endl;
-			}
-
-			if(abs(rightStick.x) > 500 || abs(rightStick.y) > 500){
-				std::cout << "pad(" << i << ") right [" << (float)rightStick.x / 32767.0f << "," << (float)rightStick.y / 32767.0f << "]" << std::endl;
+				input->joy_axis(i, 0, (float)(leftStick.x) / float(JOYSTICK_MAX));
+				input->joy_axis(i, 1, (float)(leftStick.y) / float(JOYSTICK_MAX));
+				input->joy_axis(i, 2, (float)(rightStick.x) / float(JOYSTICK_MAX));
+				input->joy_axis(i, 3, (float)(rightStick.y) / float(JOYSTICK_MAX));
 			}
 
 			if(kDown & HidNpadButton_Plus)
