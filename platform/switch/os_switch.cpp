@@ -407,9 +407,9 @@ std::vector< std::array<uint,2> > switch_joy_right_button_map = {
     {HidNpadButton_ZR, JOY_R2},
     {HidNpadButton_Plus, JOY_START},
     {HidNpadButton_StickRLeft, JOY_DPAD_UP},
-    {HidNpadButton_StickRUp, JOY_DPAD_LEFT},
+    {HidNpadButton_StickRUp, JOY_DPAD_RIGHT},
     {HidNpadButton_StickRRight, JOY_DPAD_DOWN},
-    {HidNpadButton_StickRDown, JOY_DPAD_RIGHT},
+    {HidNpadButton_StickRDown, JOY_DPAD_LEFT},
     {HidNpadButton_RightSL, JOY_L},
     {HidNpadButton_RightSR, JOY_R}
 };
@@ -423,9 +423,9 @@ std::vector< std::array<uint,2> > switch_joy_left_button_map = {
     {HidNpadButton_Right, JOY_DS_X},
     {HidNpadButton_Down, JOY_DS_A},
     {HidNpadButton_StickLLeft, JOY_DPAD_DOWN},
-    {HidNpadButton_StickLUp, JOY_DPAD_RIGHT},
+    {HidNpadButton_StickLUp, JOY_DPAD_LEFT},
     {HidNpadButton_StickLRight, JOY_DPAD_UP},
-    {HidNpadButton_StickLDown, JOY_DPAD_LEFT},
+    {HidNpadButton_StickLDown, JOY_DPAD_RIGHT},
     {HidNpadButton_LeftSL, JOY_L},
     {HidNpadButton_LeftSR, JOY_R}
 };
