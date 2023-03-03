@@ -168,13 +168,6 @@ Error OS_Switch::initialize(const VideoMode &p_desired, int p_video_driver, int 
 
 	input = memnew(InputDefault);
 	input->set_use_accumulated_input(false);
-	//input->set_emulate_mouse_from_touch(true);
-	// TODO: handle joypads/joycons status
-	//for (int i = 0; i < 8; i++) {
-	//	input->joy_connection_changed(i, true, "pad" + (char)i);
-	//}
-	
-	//joypad = memnew(JoypadSwitch(input));
 
 	power_manager = memnew(PowerSwitch);
 
@@ -445,7 +438,7 @@ struct PadConfiguration {
 void OS_Switch::run() {
 
 	if (!main_loop) {
-		TRACE("no main loop???\n");
+		ERR_FAIL_MSG("no main loop");
 		return;
 	}
 
@@ -511,7 +504,6 @@ void OS_Switch::run() {
 							input->parse_input_event(st);
 						}
 					}
-					std::cout << "touch count(" << touch_state.count << ")" << std::endl;
 				} else {
 					for (int i = 0; i < touch_state.count; i++) {
 						Vector2 pos(touch_state.touches[i].x, touch_state.touches[i].y);
@@ -538,21 +530,53 @@ void OS_Switch::run() {
 			u64 kDown = padGetButtonsDown(pad);
 			u64 kUp = padGetButtonsUp(pad);
 
+			if(pad->buttons_cur & HidNpadButton_Plus && pad->buttons_cur & HidNpadButton_R) {
+				exit = true;
+			}
+
 			if(!pad_configurations[i].initialized && kDown) {
 				pad_configurations[i].initialized = true;
-				String joy_name = "switch_pad_" + String::num(i);
+				bool solo = false;
+				String joy_name = "switch-pad-" + String::num(i);
 				if(pad->style_set & HidNpadStyleTag_NpadJoyLeft) {
 					pad_configurations[i].mapping = switch_joy_left_button_map;
-					joy_name += "_solo_left";
+					joy_name += "::solo-left";
+					solo = true;
 				}
 				else if(pad->style_set & HidNpadStyleTag_NpadJoyRight) {
 					pad_configurations[i].mapping = switch_joy_right_button_map;
-					joy_name += "_solo_right";
+					joy_name += "::solo-right";
+					solo = true;
+				}
+				else if(pad->style_set & HidNpadStyleTag_NpadJoyDual) {
+					pad_configurations[i].mapping = switch_joy_dual_button_map;
+					joy_name += "::dual";
+				}
+				else if(pad->style_set & HidNpadStyleTag_NpadFullKey) {
+					pad_configurations[i].mapping = switch_joy_dual_button_map;
+					joy_name += "::pro";
+				}
+				else if(pad->style_set & HidNpadStyleTag_NpadHandheld) {
+					pad_configurations[i].mapping = switch_joy_dual_button_map;
+					joy_name += "::handheld";
 				}
 				else {
 					pad_configurations[i].mapping = switch_joy_dual_button_map;
-					joy_name += "_dual";
+					joy_name += "::other";
 				}
+
+				if(solo){
+					HidNpadControllerColor color;
+					hidGetNpadControllerColorSingle((HidNpadIdType)i,&color);
+					joy_name += "::#" + String::num_int64(color.main,16);
+				}
+				else {
+					HidNpadControllerColor color_l, color_r;
+					hidGetNpadControllerColorSplit((HidNpadIdType)i,&color_l, &color_r);
+					joy_name += "::#" + String::num_int64(color_l.main,16);
+					joy_name += "::#" + String::num_int64(color_r.main,16);
+				}
+
 				input->joy_connection_changed(i, true, joy_name);
 				std::cout << "joy_connection_changed pad(" << i << ") " <<
 					"read_handheld(" << pad->read_handheld << ") " <<
@@ -563,17 +587,16 @@ void OS_Switch::run() {
 
 			for(const auto& button : pad_configurations[i].mapping) {
 				if(kDown & button[0]) {
-					input->joy_button(0, button[1], true);
-					std::cout << "pad(" << i << ") button down(" << button[0] << ") --> " << button[1] << std::endl;
-
+					input->joy_button(i, button[1], true);
 				}
 				if(kUp & button[0]) {
-					input->joy_button(0, button[1], false);
-					std::cout << "pad(" << i << ") button up(" << button[0] << ") --> " << button[1] << std::endl;
+					input->joy_button(i, button[1], false);
 				}
 			}
 
-			if(pad->style_set & HidNpadStyleTag_NpadJoyDual || pad->style_set & HidNpadStyleTag_NpadHandheld) {
+			if(pad->style_set & HidNpadStyleTag_NpadJoyDual || 
+			    pad->style_set & HidNpadStyleTag_NpadHandheld ||
+			    pad->style_set & HidNpadStyleTag_NpadFullKey) {
 				HidAnalogStickState leftStick = pad->sticks[0];
 				HidAnalogStickState rightStick = pad->sticks[1];
 
@@ -582,9 +605,6 @@ void OS_Switch::run() {
 				input->joy_axis(i, 2, (float)(rightStick.x) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 3, (float)(rightStick.y) / float(JOYSTICK_MAX));
 			}
-
-			if(kDown & HidNpadButton_Plus)
-				exit = true;
 		}
 
 		if(exit)
@@ -680,7 +700,7 @@ String OS_Switch::get_user_data_dir() const {
 
 OS_Switch *OS_Switch::get_singleton() {
 	return (OS_Switch *)OS::get_singleton();
-};
+}
 
 OS_Switch::OS_Switch() {
 	video_driver_index = 0;

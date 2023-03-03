@@ -32,7 +32,6 @@
 #include "context_gl_switch_egl.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
-#include "joypad_switch.h"
 #include "main/input_default.h"
 #include "power_switch.h"
 #include "servers/visual/visual_server_raster.h"
@@ -45,7 +44,6 @@ class OS_Switch : public OS {
 	InputDefault *input;
 	PowerSwitch *power_manager;
 	ContextGLSwitchEGL *gl_context;
-	JoypadSwitch *joypad;
 	AudioDriverSwitch driver_switch;
 	String switch_execpath;
 
