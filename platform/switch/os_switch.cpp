@@ -521,18 +521,12 @@ void OS_Switch::run() {
 			}
 		}
 
-		bool exit = false;
-
 		for(uint i = 0; i < pads.size(); i++) {
 			PadState* pad = &pads[i];
 			padUpdate(pad);
 
 			u64 kDown = padGetButtonsDown(pad);
 			u64 kUp = padGetButtonsUp(pad);
-
-			if(pad->buttons_cur & HidNpadButton_Plus && pad->buttons_cur & HidNpadButton_R) {
-				exit = true;
-			}
 
 			if(!pad_configurations[i].initialized && kDown) {
 				pad_configurations[i].initialized = true;
@@ -594,7 +588,7 @@ void OS_Switch::run() {
 				}
 			}
 
-			if(pad->style_set & HidNpadStyleTag_NpadJoyDual || 
+			if(pad->style_set & HidNpadStyleTag_NpadJoyDual ||
 			    pad->style_set & HidNpadStyleTag_NpadHandheld ||
 			    pad->style_set & HidNpadStyleTag_NpadFullKey) {
 				HidAnalogStickState leftStick = pad->sticks[0];
@@ -606,9 +600,6 @@ void OS_Switch::run() {
 				input->joy_axis(i, 3, (float)(rightStick.y) / float(JOYSTICK_MAX));
 			}
 		}
-
-		if(exit)
-			break; // break in order to return to hbmenu
 
 		swkbdInlineUpdate(&inline_keyboard, NULL);
 
