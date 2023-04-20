@@ -191,7 +191,6 @@ void OS_Switch::delete_main_loop() {
 
 void OS_Switch::finalize() {
 	memdelete(input);
-	//memdelete(joypad);
 	visual_server->finish();
 	memdelete(visual_server);
 	memdelete(power_manager);
@@ -378,7 +377,7 @@ void OS_Switch::key(uint32_t p_key, bool p_pressed) {
 	input->parse_input_event(ev);
 };
 
-//when only both joycon are use as a single controller (general case)
+//when only both joy-con are use as a single controller (general case)
 std::vector< std::array<uint,2> > switch_joy_dual_button_map = {
 	{HidNpadButton_A, JOY_DS_A},
 	{HidNpadButton_B, JOY_DS_B},
@@ -398,7 +397,7 @@ std::vector< std::array<uint,2> > switch_joy_dual_button_map = {
     {HidNpadButton_Down, JOY_DPAD_DOWN},
 };
 
-//when only right joycon is use as a controller horizontally
+//when only right joy-con is use as a controller horizontally
 std::vector< std::array<uint,2> > switch_joy_right_button_map = {
 	{HidNpadButton_A, JOY_DS_B},
 	{HidNpadButton_B, JOY_DS_Y},
@@ -414,7 +413,7 @@ std::vector< std::array<uint,2> > switch_joy_right_button_map = {
     {HidNpadButton_RightSR, JOY_R}
 };
 
-//when only left joycon is use as a controller horizontally
+//when only left joy-con is use as a controller horizontally
 std::vector< std::array<uint,2> > switch_joy_left_button_map = {
     {HidNpadButton_ZL, JOY_L2},
     {HidNpadButton_Minus, JOY_START},
@@ -444,10 +443,10 @@ void OS_Switch::run() {
 
 	main_loop->init();
 
-    padConfigureInput(4, HidNpadStyleSet_NpadStandard);
+    padConfigureInput(8, HidNpadStyleSet_NpadStandard);
 
-	std::vector<PadState> pads(4, PadState());
-	std::vector<PadConfiguration> pad_configurations(4,PadConfiguration());
+	std::vector<PadState> pads(8, PadState());
+	std::vector<PadConfiguration> pad_configurations(8,PadConfiguration());
 	
 	for(uint i = 0; i < pads.size(); i++) {
 		PadState* pad = &pads[i];
@@ -588,12 +587,20 @@ void OS_Switch::run() {
 				}
 			}
 
-			if(pad->style_set & HidNpadStyleTag_NpadJoyDual ||
-			    pad->style_set & HidNpadStyleTag_NpadHandheld ||
-			    pad->style_set & HidNpadStyleTag_NpadFullKey) {
-				HidAnalogStickState leftStick = pad->sticks[0];
-				HidAnalogStickState rightStick = pad->sticks[1];
+			HidAnalogStickState leftStick = pad->sticks[0];
+			HidAnalogStickState rightStick = pad->sticks[1];
 
+			if(pad->style_set & HidNpadStyleTag_NpadJoyLeft) {
+				// only left stick available and rotated 90 anti-clock wise
+				input->joy_axis(i, 1, (float)(leftStick.x) / float(JOYSTICK_MAX));
+				input->joy_axis(i, 0, -(float)(leftStick.y) / float(JOYSTICK_MAX));
+			}			
+			else if(pad->style_set & HidNpadStyleTag_NpadJoyRight) {
+				// only left stick available and rotated 90 clock wise
+				input->joy_axis(i, 1, -(float)(rightStick.x) / float(JOYSTICK_MAX));
+				input->joy_axis(i, 0, (float)(rightStick.y) / float(JOYSTICK_MAX));
+			}
+			else{
 				input->joy_axis(i, 0, (float)(leftStick.x) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 1, (float)(leftStick.y) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 2, (float)(rightStick.x) / float(JOYSTICK_MAX));

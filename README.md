@@ -33,6 +33,8 @@ Finally run `scons platform=switch` in the root of the repo.
 
 Now the template is ready to be used, if you want to use it right now make sure to "install" it in your current godot templates folder. It can be done with: `./scripts/install-template.sh`
 
+If you want to learn a little bit more about how switch controllers are handled see [controller.md](./platform/switch/controller.md).
+
 ## How can I get help?
 
 Either make an issue on this repo, or join the [Discord](https://discordapp.com/invite/yUC3rUk)!
