@@ -443,15 +443,18 @@ void OS_Switch::run() {
 
 	main_loop->init();
 
-	const int max_players = 8;
-	padConfigureInput(max_players, HidNpadStyleSet_NpadStandard);
-	std::vector<PadState> pads(max_players, PadState());
-	std::vector<PadConfiguration> pad_configurations(max_players,PadConfiguration());
+	const int controller_count = 8; // 8 normals + handheld
+	padConfigureInput(controller_count, HidNpadStyleSet_NpadStandard);
+	std::vector<PadState> pads(controller_count, PadState());
+	std::vector<PadConfiguration> pad_configurations(controller_count,PadConfiguration());
 	
-	for(uint i = 0; i < pads.size(); i++) {
+	//fist is No1 + handheld
+	padInitialize(&pads[0], HidNpadIdType_No1, HidNpadIdType_Handheld);
+
+	// from 2 -> 8 controller
+	for(uint i = 1; i < controller_count; i++) {
 		PadState* pad = &pads[i];
-		HidNpadIdType pad_id = HidNpadIdType(i);
-		padInitialize(pad, pad_id);
+		padInitialize(pad, HidNpadIdType(i));
 	}
 
 	swkbdInlineLaunchForLibraryApplet(&inline_keyboard, SwkbdInlineMode_AppletDisplay, 0);
@@ -612,8 +615,10 @@ void OS_Switch::run() {
 
 		swkbdInlineUpdate(&inline_keyboard, NULL);
 
-		if (Main::iteration())
+		if (Main::iteration()) {
+			std::cout << "Main::iteration" << std::endl;
 			break;
+		}
 	}
 
 	swkbdInlineClose(&inline_keyboard);
