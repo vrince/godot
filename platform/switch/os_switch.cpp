@@ -443,15 +443,15 @@ void OS_Switch::run() {
 
 	main_loop->init();
 
-    padConfigureInput(8, HidNpadStyleSet_NpadStandard);
-
-	std::vector<PadState> pads(8, PadState());
-	std::vector<PadConfiguration> pad_configurations(8,PadConfiguration());
+	const int max_players = 8;
+	padConfigureInput(max_players, HidNpadStyleSet_NpadStandard);
+	std::vector<PadState> pads(max_players, PadState());
+	std::vector<PadConfiguration> pad_configurations(max_players,PadConfiguration());
 	
 	for(uint i = 0; i < pads.size(); i++) {
 		PadState* pad = &pads[i];
 		HidNpadIdType pad_id = HidNpadIdType(i);
-		padInitialize(pad, pad_id, HidNpadIdType_Handheld);
+		padInitialize(pad, pad_id);
 	}
 
 	swkbdInlineLaunchForLibraryApplet(&inline_keyboard, SwkbdInlineMode_AppletDisplay, 0);
@@ -572,6 +572,7 @@ void OS_Switch::run() {
 
 				input->joy_connection_changed(i, true, joy_name);
 				std::cout << "joy_connection_changed pad(" << i << ") " <<
+					"name(" << joy_name.utf8().get_data() << ") " <<
 					"read_handheld(" << pad->read_handheld << ") " <<
 					"active_handheld(" << pad->active_handheld << ") " <<
 					"attributes(" << pad->attributes << ") " <<
@@ -601,6 +602,7 @@ void OS_Switch::run() {
 				input->joy_axis(i, 0, (float)(rightStick.y) / float(JOYSTICK_MAX));
 			}
 			else{
+				// both sticks no rotations
 				input->joy_axis(i, 0, (float)(leftStick.x) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 1, (float)(leftStick.y) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 2, (float)(rightStick.x) / float(JOYSTICK_MAX));
