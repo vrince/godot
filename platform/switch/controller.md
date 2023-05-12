@@ -29,7 +29,7 @@ func _input(event: InputEvent):
 func _on_joy_connection_changed( device, connected):
     var name = Input.get_joy_name(device)
     var message = "device:" + String(device) + " connected:" + String(connected) + " name:" + name
-    print(message) 
+    print(message)
     #to see it on the switch put it in a label
     #$ControllerEvent.text = message
 ```

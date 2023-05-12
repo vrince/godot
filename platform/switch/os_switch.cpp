@@ -447,8 +447,8 @@ void OS_Switch::run() {
 	padConfigureInput(controller_count, HidNpadStyleSet_NpadStandard);
 	std::vector<PadState> pads(controller_count, PadState());
 	std::vector<PadConfiguration> pad_configurations(controller_count,PadConfiguration());
-	
-	//fist is No1 + handheld
+
+	// fist is No1 + handheld
 	padInitialize(&pads[0], HidNpadIdType_No1, HidNpadIdType_Handheld);
 
 	// from 2 -> 8 controller
@@ -598,13 +598,13 @@ void OS_Switch::run() {
 				// only left stick available and rotated 90 anti-clock wise
 				input->joy_axis(i, 1, (float)(leftStick.x) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 0, -(float)(leftStick.y) / float(JOYSTICK_MAX));
-			}			
+			}
 			else if(pad->style_set & HidNpadStyleTag_NpadJoyRight) {
 				// only left stick available and rotated 90 clock wise
 				input->joy_axis(i, 1, -(float)(rightStick.x) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 0, (float)(rightStick.y) / float(JOYSTICK_MAX));
 			}
-			else{
+			else {
 				// both sticks no rotations
 				input->joy_axis(i, 0, (float)(leftStick.x) / float(JOYSTICK_MAX));
 				input->joy_axis(i, 1, (float)(leftStick.y) / float(JOYSTICK_MAX));
