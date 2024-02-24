@@ -28,7 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#pragma once
+#ifndef GL_MANAGER_SWITCH_H
+#define GL_MANAGER_SWITCH_H
+
 #include "core/os/os.h"
 
 #include <EGL/egl.h> // EGL library
@@ -60,3 +62,5 @@ public:
 	GLManagerSwitch();
 	virtual ~GLManagerSwitch();
 };
+
+#endif // GL_MANAGER_SWITCH_H
