@@ -6,4 +6,7 @@ runs:
     - name: Setup devkitpro
       shell: bash
       run: |
-        echo "Setup devkitpro ;)"
+        wget https://apt.devkitpro.org/install-devkitpro-pacman
+        chmod +x ./install-devkitpro-pacman
+        ./install-devkitpro-pacman
+        dkp-pacman -S --noconfirm --noprogressbar switch-dev

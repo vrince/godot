@@ -1,4 +1,4 @@
-name: 🧶 Switch Builds
+name: 🧶 Switch (devkitpro) Builds
 on:
   workflow_call:
 

@@ -15,6 +15,12 @@ jobs:
 
   # Second stage: Run all the builds and some of the tests.
 
+  switch-build:
+    if: ${{ vars.DISABLE_GODOT_CI == '' }}
+    name: 🧶 Switch 
+    needs: static-checks
+    uses: ./.github/workflows/switch_builds.yml
+
   android-build:
     if: ${{ vars.DISABLE_GODOT_CI == '' }}
     name: 🤖 Android
