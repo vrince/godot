@@ -41,4 +41,4 @@ public:
 	virtual ~KeyboardSwitch();
 };
 
-#endif //KEYBOARD_SWITCH_H
+#endif // KEYBOARD_SWITCH_H

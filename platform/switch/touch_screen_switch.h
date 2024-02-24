@@ -41,4 +41,4 @@ public:
 	virtual ~TouchScreenSwitch();
 };
 
-#endif //TOUCH_SCREEN_SWITCH_H
+#endif // TOUCH_SCREEN_SWITCH_H

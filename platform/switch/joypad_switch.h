@@ -73,4 +73,4 @@ public:
 	virtual ~JoypadSwitch() = default;
 };
 
-#endif //JOYPAD_SWITCH_H
+#endif // JOYPAD_SWITCH_H

@@ -41,7 +41,6 @@
 
 #include "gl_manager_switch.h"
 
-
 class DisplayServerSwitch : public DisplayServer {
 	// No need to register with GDCLASS, it's platform-specific and nothing is added.
 

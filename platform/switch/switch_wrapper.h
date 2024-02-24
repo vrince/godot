@@ -28,6 +28,9 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
+#ifndef SWITCH_WRAPPER_H
+#define SWITCH_WRAPPER_H
+
 #define Mutex LibnxMutex
 #define Semaphore LibnxSemaphore
 #define Thread LibnxThread
@@ -39,3 +42,5 @@
 #undef Thread
 #undef Mutex
 #undef Semaphore
+
+#endif // SWITCH_WRAPPER_H

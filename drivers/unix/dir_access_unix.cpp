@@ -441,7 +441,7 @@ bool DirAccessUnix::is_link(String p_file) {
 
 String DirAccessUnix::read_link(String p_file) {
 #if defined(__SWITCH__)
-	return FAILED;
+	ERR_FAIL_V("");
 #else
 	if (p_file.is_relative_path()) {
 		p_file = get_current_dir().path_join(p_file);

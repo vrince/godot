@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef AUSIO_DRIVER_SWITCH_H
-#define AUSIO_DRIVER_SWITCH_H
+#ifndef AUDIO_DRIVER_SWITCH_H
+#define AUDIO_DRIVER_SWITCH_H
 
 #include "switch_wrapper.h"
 
@@ -41,4 +41,4 @@ public:
 	virtual ~AudioDriverSwitch();
 };
 
-#endif //AUSIO_DRIVER_SWITCH_H
+#endif // AUDIO_DRIVER_SWITCH_H
