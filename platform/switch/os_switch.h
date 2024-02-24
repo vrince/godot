@@ -34,8 +34,8 @@
 #include "core/crypto/crypto_core.h"
 #include "drivers/unix/os_unix.h"
 
-#include "switch_wrapper.h"
 #include "joypad_switch.h"
+#include "switch_wrapper.h"
 
 #include <string>
 #include <vector>
