@@ -1,0 +1,9 @@
+name: Setup devkitpro
+description: Setup devkitpro from offical repo
+runs:
+  using: "composite"
+  steps:
+    - name: Setup devkitpro
+      shell: bash
+      run: |
+        echo "Setup devkitpro ;)"
