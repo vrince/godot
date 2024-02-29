@@ -207,7 +207,9 @@ void EditorExportPlatformSwitch::get_export_options(List<ExportOption> *r_option
 String EditorExportPlatformSwitch::get_export_option_warning(const EditorExportPreset *p_preset, const StringName &p_name) const {
 	if (p_preset) {
 		//TODO test if devkits path exists
+		return "";
 	}
+	return "";
 }
 
 Error EditorExportPlatformSwitch::fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {

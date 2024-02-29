@@ -97,8 +97,11 @@ def configure(env):
     os.environ["PATH"] = updated_path  # os environment has to be updated for subprocess calls
 
     arch = ["-march=armv8-a", "-mtune=cortex-a57", "-mtp=soft", "-fPIE"]
-    env.Prepend(CCFLAGS=arch + ["-ffunction-sections", "-flax-vector-conversions"])
-    # "-flax-vector-conversions" is required to build embree aarch64
+    env.Prepend(CCFLAGS=arch + ["-ffunction-sections",
+                                "-flax-vector-conversions",
+                                "-Wno-error=stringop-overflow", # otherwise build with warnings=extra werror=yes fails
+                                "-Wno-error=type-limits"]) # otherwise build with warnings=extra werror=yes fails
+
 
     env.Prepend(CPPPATH=["{}/portlibs/switch/include".format(dkp)])
     env.Prepend(CPPFLAGS=["-isystem", "{}/libnx/include".format(dkp)])
@@ -149,7 +152,7 @@ def configure(env):
 
     # Modules
 
-    # raycast module request embtree that we canot compile for swtichbrew for now
+    # raycast module request embtree that we cannot compile for switchbrew for now
     env["module_raycast_enabled"] = False
     env["builtin_embree"] = False
 
