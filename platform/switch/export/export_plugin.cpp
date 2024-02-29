@@ -45,8 +45,6 @@
 #include "modules/svg/image_loader_svg.h"
 #endif
 
-#include "modules/switch/switch_tools.h"
-
 Error EditorExportPlatformSwitch::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
 	// what is happening:
 	// first we create a normal .pck (no console wrapper / no pck embed fix)

@@ -127,7 +127,6 @@ static void handle_interrupt(int sig) {
 	if (!EngineDebugger::is_active()) {
 		return;
 	}
-
 	EngineDebugger::get_script_debugger()->set_depth(-1);
 	EngineDebugger::get_script_debugger()->set_lines_left(1);
 }
@@ -626,7 +625,7 @@ int OS_Unix::get_process_id() const {
 
 bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 #if defined(__SWITCH__)
-	return ERR_UNAVAILABLE;
+	return false;
 #endif
 	int status = 0;
 	if (waitpid(p_pid, &status, WNOHANG) != 0) {
