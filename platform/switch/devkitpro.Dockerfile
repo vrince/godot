@@ -9,3 +9,4 @@ RUN apt-get update && \
     apt-get --yes --no-install-recommends install devkitpro-pacman
 RUN ln -sf /proc/mounts /etc/mtab
 RUN dkp-pacman -S --noconfirm --noprogressbar switch-dev
+ENV DEVKITPRO=/opt/devkitpro
