@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   switch-template:
-    runs-on: "ubuntu-20.04"
+    runs-on: "vrince/devkitpro:20.04-r25.1"
     name: Template (target=template_release)
 
     steps:
@@ -26,9 +26,6 @@ jobs:
 
       - name: Setup python and scons
         uses: ./.github/actions/godot-deps
-
-      - name: Setup devkit-pro
-        uses: ./.github/actions/devkitpro
 
       - name: Compilation (arm64)
         uses: ./.github/actions/godot-build
