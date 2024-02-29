@@ -16,7 +16,7 @@ jobs:
   switch-template:
     runs-on: "ubuntu-20.04"
     name: Template (target=template_release)
-    container: vrince/devkitpro:20.04-r25.1
+    container: vrince/devkitpro:ubuntu-20.04_devkitA64-r25.1
 
     steps:
       - uses: actions/checkout@v4

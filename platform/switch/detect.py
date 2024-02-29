@@ -17,15 +17,12 @@ def get_name():
 def can_build():
     # Check the minimal dependencies
     if "DEVKITPRO" not in os.environ:
-        print("Error: DEVKITPRO not defined in environment. Aborting [switch platform]")
         return False
 
     if not os.path.exists("{}/devkitA64".format(os.environ.get("DEVKITPRO"))):
-        print("Error: devkitA64 not found. Aborting [switch platform]")
         return False
 
     if not os.path.exists("{}/portlibs/switch/bin/aarch64-none-elf-pkg-config".format(os.environ.get("DEVKITPRO"))):
-        print("Error: aarch64-none-elf-pkg-config not found. Aborting [switch platform]")
         return False
 
     return True
@@ -152,7 +149,7 @@ def configure(env):
 
     # Modules
 
-    # raycast modeul request embtree that we canot compile for swtichbrew for now
+    # raycast module request embtree that we canot compile for swtichbrew for now
     env["module_raycast_enabled"] = False
     env["builtin_embree"] = False
 

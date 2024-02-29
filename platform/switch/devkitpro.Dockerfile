@@ -8,5 +8,5 @@ RUN mkdir -p /usr/local/share/keyring/ && \
 RUN apt-get update && \
     apt-get --yes --no-install-recommends install devkitpro-pacman
 RUN ln -sf /proc/mounts /etc/mtab
-RUN dkp-pacman -S --noconfirm --noprogressbar switch-dev
+RUN dkp-pacman -S --noconfirm --noprogressbar switch-dev switch-portlibs
 ENV DEVKITPRO=/opt/devkitpro
