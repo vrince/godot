@@ -14,8 +14,9 @@ concurrency:
 
 jobs:
   switch-template:
-    runs-on: "vrince/devkitpro:20.04-r25.1"
+    runs-on: "ubuntu-20.04"
     name: Template (target=template_release)
+    container: vrince/devkitpro:20.04-r25.1
 
     steps:
       - uses: actions/checkout@v4
