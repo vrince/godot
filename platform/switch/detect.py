@@ -97,11 +97,15 @@ def configure(env):
     os.environ["PATH"] = updated_path  # os environment has to be updated for subprocess calls
 
     arch = ["-march=armv8-a", "-mtune=cortex-a57", "-mtp=soft", "-fPIE"]
-    env.Prepend(CCFLAGS=arch + ["-ffunction-sections",
-                                "-flax-vector-conversions",
-                                "-Wno-error=stringop-overflow", # otherwise build with warnings=extra werror=yes fails
-                                "-Wno-error=type-limits"]) # otherwise build with warnings=extra werror=yes fails
-
+    env.Prepend(
+        CCFLAGS=arch
+        + [
+            "-ffunction-sections",
+            "-flax-vector-conversions",
+            "-Wno-error=stringop-overflow",  # otherwise build with warnings=extra werror=yes fails
+            "-Wno-error=type-limits",
+        ]
+    )
 
     env.Prepend(CPPPATH=["{}/portlibs/switch/include".format(dkp)])
     env.Prepend(CPPFLAGS=["-isystem", "{}/libnx/include".format(dkp)])
