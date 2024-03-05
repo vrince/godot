@@ -46,6 +46,8 @@ class GLManagerSwitch {
 	EGLContext _context = nullptr;
 	EGLSurface _surface = nullptr;
 
+	friend class DisplayServerSwitch;
+
 public:
 	void release_current();
 	void make_current();

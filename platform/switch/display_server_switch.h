@@ -47,7 +47,18 @@ class DisplayServerSwitch : public DisplayServer {
 	GLManagerSwitch *_gl_manager = nullptr;
 	NWindow *_window = nullptr;
 
+	ObjectID _window_attached_instance_id;
+
+	Callable _window_event_callback;
+	Callable _input_event_callback;
+	Callable _input_text_callback;
+
+	void _window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred = false) const;
+	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
+
 public:
+	static DisplayServerSwitch *get_singleton();
+
 	virtual bool has_feature(Feature p_feature) const override;
 	virtual String get_name() const override;
 
@@ -74,6 +85,10 @@ public:
 	virtual void window_set_input_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_input_text_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual void window_set_drop_files_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override;
+
+	void send_window_event(WindowEvent p_event, bool p_deferred = false) const;
+	void send_input_event(const Ref<InputEvent> &p_event) const;
+	void send_input_text(const String &p_text) const;
 
 	virtual int window_get_current_screen(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;

@@ -47,8 +47,15 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <iostream>
+
+DisplayServerSwitch *DisplayServerSwitch::get_singleton() {
+	return static_cast<DisplayServerSwitch *>(DisplayServer::get_singleton());
+}
+
 bool DisplayServerSwitch::has_feature(Feature p_feature) const {
 	switch (p_feature) {
+		case FEATURE_VIRTUAL_KEYBOARD:
 		case FEATURE_TOUCHSCREEN:
 		case FEATURE_SWAP_BUFFERS:
 			return true;
@@ -101,24 +108,48 @@ float DisplayServerSwitch::screen_get_refresh_rate(int p_screen) const {
 }
 
 int64_t DisplayServerSwitch::window_get_native_handle(HandleType p_handle_type, WindowID p_window) const {
-	return 0;
+	ERR_FAIL_COND_V(p_window != MAIN_WINDOW_ID, 0);
+	switch (p_handle_type) {
+		case WINDOW_HANDLE: {
+			return reinterpret_cast<int64_t>(_window);
+		}
+		case WINDOW_VIEW: {
+			return 0; // Not supported.
+		}
+		case DISPLAY_HANDLE: {
+			if (_gl_manager) {
+				return reinterpret_cast<int64_t>(_gl_manager->_display);
+			}
+			return 0;
+		}
+		case OPENGL_CONTEXT: {
+			if (_gl_manager) {
+				return reinterpret_cast<int64_t>(_gl_manager->_context);
+			}
+			return 0;
+		}
+		default: {
+			return 0;
+		}
+	}
 }
 
 void DisplayServerSwitch::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+	_window_attached_instance_id = p_instance;
 }
 
 ObjectID DisplayServerSwitch::window_get_attached_instance_id(WindowID p_window) const {
-	return ObjectID();
+	return _window_attached_instance_id;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerSwitch::get_window_list() const {
 	Vector<DisplayServer::WindowID> list;
-	list.push_back(0);
+	list.push_back(MAIN_WINDOW_ID);
 	return list;
 }
 
 DisplayServer::WindowID DisplayServerSwitch::get_window_at_screen_position(const Point2i &p_position) const {
-	return INVALID_WINDOW_ID;
+	return MAIN_WINDOW_ID;
 }
 
 void DisplayServerSwitch::window_set_title(const String &p_title, WindowID p_window) {
@@ -128,19 +159,52 @@ void DisplayServerSwitch::window_set_rect_changed_callback(const Callable &p_cal
 }
 
 void DisplayServerSwitch::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
+	_window_event_callback = p_callable;
 }
 
 void DisplayServerSwitch::window_set_input_event_callback(const Callable &p_callable, WindowID p_window) {
+	_input_event_callback = p_callable;
 }
 
 void DisplayServerSwitch::window_set_input_text_callback(const Callable &p_callable, WindowID p_window) {
+	_input_text_callback = p_callable;
 }
 
 void DisplayServerSwitch::window_set_drop_files_callback(const Callable &p_callable, WindowID p_window) {
+	// Not supported
+}
+
+void DisplayServerSwitch::_window_callback(const Callable &p_callable, const Variant &p_arg, bool p_deferred) const {
+	if (!p_callable.is_null()) {
+		const Variant *argp = &p_arg;
+		Variant ret;
+		Callable::CallError ce;
+		if (p_deferred) {
+			p_callable.call_deferredp((const Variant **)&argp, 1);
+		} else {
+			p_callable.callp((const Variant **)&argp, 1, ret, ce);
+		}
+	}
+}
+
+void DisplayServerSwitch::send_window_event(DisplayServer::WindowEvent p_event, bool p_deferred) const {
+	_window_callback(_window_event_callback, int(p_event), p_deferred);
+}
+
+void DisplayServerSwitch::send_input_event(const Ref<InputEvent> &p_event) const {
+	_window_callback(_input_event_callback, p_event);
+}
+
+void DisplayServerSwitch::send_input_text(const String &p_text) const {
+	_window_callback(_input_text_callback, p_text);
+}
+
+void DisplayServerSwitch::_dispatch_input_events(const Ref<InputEvent> &p_event) {
+	DisplayServerSwitch::get_singleton()->send_input_event(p_event);
 }
 
 int DisplayServerSwitch::window_get_current_screen(WindowID p_window) const {
-	return 0;
+	return SCREEN_OF_MAIN_WINDOW;
 }
 
 void DisplayServerSwitch::gl_window_make_current(DisplayServer::WindowID p_window_id) {
@@ -231,6 +295,7 @@ void DisplayServerSwitch::window_move_to_foreground(WindowID p_window) {
 }
 
 bool DisplayServerSwitch::window_is_focused(WindowID p_window) const {
+	return true;
 }
 
 bool DisplayServerSwitch::window_can_draw(WindowID p_window) const {
@@ -270,7 +335,6 @@ void DisplayServerSwitch::process_events() {
 	// input
 	// keyboard
 	// pads
-
 	Input::get_singleton()->flush_buffered_events();
 }
 
@@ -326,7 +390,7 @@ DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, Windo
 	r_error = FAILED;
 	_window = nwindowGetDefault();
 
-	//Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
+	Input::get_singleton()->set_event_dispatch_function(DisplayServerSwitch::_dispatch_input_events);
 
 	// Initialize context and rendering device.
 	_gl_manager = memnew(GLManagerSwitch());
@@ -349,7 +413,6 @@ DisplayServerSwitch::DisplayServerSwitch(const String &p_rendering_driver, Windo
 		return;
 	}
 
-	RasterizerGLES3::make_current();
 	RasterizerGLES3::make_current();
 
 	// plug nvwindows id

@@ -102,6 +102,7 @@ void OS_Switch::run() {
 	}
 
 	_main_loop->initialize();
+	
 
 	while (appletMainLoop()) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events

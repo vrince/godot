@@ -88,6 +88,8 @@ void JoypadSwitch::initialize(Input *input) {
 	print_line("JoypadSwitch::initialize");
 
 	_input = input;
+	_input->set_use_accumulated_input(false);
+	_input->set_use_input_buffering(false);
 
 	//accept up to 8 controllers, all modes
 	padConfigureInput(_pads.size(), HidNpadStyleSet_NpadStandard);
@@ -165,9 +167,11 @@ void JoypadSwitch::process() {
 
 		for (const auto &button : pad.mapping) {
 			if (kDown & button.first) {
+				std::cout << "pad(" << pad.id << ") button(" << (int)button.second << ") down" << std::endl;
 				_input->joy_button(pad.id, button.second, true);
 			}
 			if (kUp & button.first) {
+				std::cout << "pad(" << pad.id << ") button(" << (int)button.second << ") up" << std::endl;
 				_input->joy_button(pad.id, button.second, false);
 			}
 		}
