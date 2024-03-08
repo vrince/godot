@@ -56,7 +56,7 @@ protected:
 public:
 	static KeyboardSwitch* get();
 
-	void initialize(Input *input);
+	void initialize();
 
 	const KeyboardSwitchState& state() const { return _state;}
 	KeyboardSwitchState& state() { return _state;}

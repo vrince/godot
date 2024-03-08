@@ -84,12 +84,11 @@ const std::vector<std::pair<uint, JoyButton>> JoypadSwitch::switch_joy_left_butt
 	{ HidNpadButton_LeftSR, JoyButton::RIGHT_SHOULDER }
 };
 
-void JoypadSwitch::initialize(Input *input) {
+void JoypadSwitch::initialize() {
 	print_line("JoypadSwitch::initialize");
 
-	_input = input;
-	_input->set_use_accumulated_input(false);
-	_input->set_use_input_buffering(false);
+	Input::get_singleton()->set_use_accumulated_input(false);
+	Input::get_singleton()->set_use_input_buffering(false);
 
 	//accept up to 8 controllers, all modes
 	padConfigureInput(_pads.size(), HidNpadStyleSet_NpadStandard);
@@ -141,7 +140,7 @@ void JoypadSwitch::discover_pad(PadStateSwitch &pad) {
 		joy_name += "::#" + String::num_int64(color_r.main, 16);
 	}
 
-	_input->joy_connection_changed(pad.id, true, joy_name);
+	Input::get_singleton()->joy_connection_changed(pad.id, true, joy_name);
 	std::cout << "joy_connection_changed pad(" << pad.id << ") "
 			  << "name(" << joy_name.utf8().get_data() << ") "
 			  << "read_handheld(" << pad.read_handheld << ") "
@@ -154,6 +153,9 @@ void JoypadSwitch::dispatch(PadStateSwitch &pad) {
 }
 
 void JoypadSwitch::process() {
+
+	Input* input = Input::get_singleton();
+
 	for (uint i = 0; i < _pads.size(); i++) {
 		PadStateSwitch &pad = _pads[i];
 		padUpdate(&pad);
@@ -167,10 +169,10 @@ void JoypadSwitch::process() {
 
 		for (const auto &button : pad.mapping) {
 			if (kDown & button.first) {
-				_input->joy_button(pad.id, button.second, true);
+				input->joy_button(pad.id, button.second, true);
 			}
 			if (kUp & button.first) {
-				_input->joy_button(pad.id, button.second, false);
+				input->joy_button(pad.id, button.second, false);
 			}
 		}
 
@@ -179,18 +181,18 @@ void JoypadSwitch::process() {
 
 		if (pad.style_set & HidNpadStyleTag_NpadJoyLeft) {
 			// only left stick available and rotated 90 anti-clock wise
-			_input->joy_axis(i, JoyAxis::LEFT_Y, (float)(leftStick.x) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::LEFT_X, -(float)(leftStick.y) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::LEFT_Y, (float)(leftStick.x) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::LEFT_X, -(float)(leftStick.y) / float(JOYSTICK_MAX));
 		} else if (pad.style_set & HidNpadStyleTag_NpadJoyRight) {
 			// only left stick available and rotated 90 clock wise
-			_input->joy_axis(i, JoyAxis::LEFT_Y, -(float)(rightStick.x) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::LEFT_X, (float)(rightStick.y) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::LEFT_Y, -(float)(rightStick.x) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::LEFT_X, (float)(rightStick.y) / float(JOYSTICK_MAX));
 		} else {
 			// both sticks no rotations
-			_input->joy_axis(i, JoyAxis::LEFT_X, (float)(leftStick.x) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::LEFT_Y, -(float)(leftStick.y) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::RIGHT_X, (float)(rightStick.x) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::RIGHT_Y, -(float)(rightStick.y) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::LEFT_X, (float)(leftStick.x) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::LEFT_Y, -(float)(leftStick.y) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::RIGHT_X, (float)(rightStick.x) / float(JOYSTICK_MAX));
+			input->joy_axis(i, JoyAxis::RIGHT_Y, -(float)(rightStick.y) / float(JOYSTICK_MAX));
 		}
 	}
 }

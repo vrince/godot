@@ -29,3 +29,61 @@
 /**************************************************************************/
 
 #include "touch_screen_switch.h"
+
+#include <iostream>
+
+TouchScreenSwitch::TouchScreenSwitch() {
+}
+
+TouchScreenSwitch::~TouchScreenSwitch() {
+}
+
+void TouchScreenSwitch::initialize() {
+	hidInitializeTouchScreen();
+}
+
+void TouchScreenSwitch::process() {
+	auto drop_touches = _touches;
+
+	HidTouchScreenState state;
+	if (hidGetTouchScreenStates(&state, 1)) {
+
+		//for (int i = 0; i < state.count; i++) {
+		//	std::cout << i << " [" << state.touches[i].finger_id << "] " << state.touches[i].attributes << " ("
+		//			  << state.touches[i].x << "," << state.touches[i].y << ")" << std::endl;
+		//}
+
+		for (int i = 0; i < state.count; i++) {
+			const int id = state.touches[i].finger_id;
+
+			drop_touches.erase(id);
+			auto it = _touches.find(id);
+
+			if (it == _touches.end()) { //new touch
+				_touches[id] = state.touches[i];
+			}
+
+			Vector2 pos(_touches[id].x, _touches[id].y);
+			Ref<InputEventScreenTouch> ev;
+			ev.instantiate();
+			ev->set_index(id);
+			ev->set_position(pos);
+			ev->set_pressed(true);
+			Input::get_singleton()->parse_input_event(ev);
+		}
+	}
+
+	for (auto &it : drop_touches) {
+		const int id = it.first;
+        Vector2 pos(_touches[id].x, _touches[id].y);
+
+		_touches.erase(id);
+
+        Ref<InputEventScreenTouch> ev;
+		ev.instantiate();
+		ev->set_index(id);
+        ev->set_position(pos);
+		ev->set_pressed(false);
+		Input::get_singleton()->parse_input_event(ev);
+	}
+}

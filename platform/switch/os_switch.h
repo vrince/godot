@@ -36,6 +36,8 @@
 
 #include "joypad_switch.h"
 #include "keyboard_switch.h"
+#include "touch_screen_switch.h"
+
 #include "switch_wrapper.h"
 
 #include <string>
@@ -47,6 +49,7 @@ class OS_Switch : public OS_Unix {
 	std::vector<std::string> _args;
 	JoypadSwitch* _joypads = nullptr;
 	KeyboardSwitch* _keyboard = nullptr;
+	TouchScreenSwitch* _touch_screen = nullptr;
 
 private:
 protected:

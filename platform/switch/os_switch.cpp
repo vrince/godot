@@ -51,7 +51,8 @@ void OS_Switch::finalize() {
 
 void OS_Switch::initialize_core() {
 	OS_Unix::initialize_core();
-	_keyboard->initialize(Input::get_singleton());
+	_touch_screen->initialize();
+	_keyboard->initialize();
 }
 
 void OS_Switch::finalize_core() {
@@ -64,7 +65,7 @@ Error OS_Switch::get_entropy(uint8_t *r_buffer, int p_bytes) {
 }
 
 void OS_Switch::initialize_joypads() {
-	_joypads->initialize(Input::get_singleton());
+	_joypads->initialize();
 }
 
 void OS_Switch::delete_main_loop() {
@@ -105,12 +106,11 @@ void OS_Switch::run() {
 
 	_main_loop->initialize();
 
-	_keyboard->show("hello");
-
 	while (appletMainLoop()) {
 		DisplayServer::get_singleton()->process_events(); // get rid of pending events
 
 		_joypads->process();
+		_touch_screen->process();
 		_keyboard->process();
 
 		u32 kDown = padGetButtonsDown(&_joypads->get_pad());
@@ -136,6 +136,7 @@ OS_Switch::OS_Switch(const std::vector<std::string> &args) :
 	DisplayServerSwitch::register_NVN_driver();
 
 	_joypads = new JoypadSwitch();
+	_touch_screen = new TouchScreenSwitch();
 	_keyboard = KeyboardSwitch::get();
 
 	print("OS_Switch\n");
@@ -147,4 +148,5 @@ OS_Switch::~OS_Switch() {
 	socketExit();
 
 	delete _joypads;
+	delete _touch_screen;
 }

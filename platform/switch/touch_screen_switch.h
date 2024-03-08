@@ -33,12 +33,23 @@
 
 #include "switch_wrapper.h"
 
+#include <core/input/input.h>
+
+#include <map>
+
 class TouchScreenSwitch {
 private:
+	std::map<int, HidTouchState> _touches;
+
+	Input *_input = nullptr;
+
 protected:
 public:
 	TouchScreenSwitch();
 	virtual ~TouchScreenSwitch();
+
+	void initialize();
+	void process();
 };
 
 #endif // TOUCH_SCREEN_SWITCH_H

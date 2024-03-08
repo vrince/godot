@@ -47,7 +47,7 @@ KeyboardSwitch *KeyboardSwitch::get() {
 	return _instance;
 }
 
-void KeyboardSwitch::initialize(Input *input) {
+void KeyboardSwitch::initialize() {
 	swkbdInlineCreate(&_keyboard);
 
 	swkbdInlineLaunchForLibraryApplet(&_keyboard, SwkbdInlineMode_AppletDisplay, 0);
