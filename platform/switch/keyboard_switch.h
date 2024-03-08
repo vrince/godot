@@ -33,12 +33,45 @@
 
 #include "switch_wrapper.h"
 
+#include <core/input/input.h>
+
+struct KeyboardSwitchState {
+	bool _opened;
+	int _events = 0;
+	u32 _stringLen = 0;
+	s32 _cursorPos = 0;
+};
+
 class KeyboardSwitch {
 private:
+	SwkbdInline _keyboard;
+	KeyboardSwitchState _state;
+
+	static KeyboardSwitch* _instance;
+
 protected:
-public:
 	KeyboardSwitch();
 	virtual ~KeyboardSwitch();
+
+public:
+	static KeyboardSwitch* get();
+
+	void initialize(Input *input);
+
+	const KeyboardSwitchState& state() const { return _state;}
+	KeyboardSwitchState& state() { return _state;}
+
+	void show(const String &current);
+	void hide();
+
+	void key_event(Key key, bool pressed = true);
+
+	void process();
 };
+
+void keyboard_string_changed_callback(const char *str, SwkbdChangedStringArg *arg);
+void keyboard_moved_cursor_callback(const char *str, SwkbdMovedCursorArg *arg);
+void keyboard_decided_enter_callback(const char *str, SwkbdDecidedEnterArg *arg);
+void keyboard_decided_cancel_callback();
 
 #endif // KEYBOARD_SWITCH_H

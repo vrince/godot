@@ -167,11 +167,9 @@ void JoypadSwitch::process() {
 
 		for (const auto &button : pad.mapping) {
 			if (kDown & button.first) {
-				std::cout << "pad(" << pad.id << ") button(" << (int)button.second << ") down" << std::endl;
 				_input->joy_button(pad.id, button.second, true);
 			}
 			if (kUp & button.first) {
-				std::cout << "pad(" << pad.id << ") button(" << (int)button.second << ") up" << std::endl;
 				_input->joy_button(pad.id, button.second, false);
 			}
 		}
@@ -190,9 +188,9 @@ void JoypadSwitch::process() {
 		} else {
 			// both sticks no rotations
 			_input->joy_axis(i, JoyAxis::LEFT_X, (float)(leftStick.x) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::LEFT_Y, (float)(leftStick.y) / float(JOYSTICK_MAX));
+			_input->joy_axis(i, JoyAxis::LEFT_Y, -(float)(leftStick.y) / float(JOYSTICK_MAX));
 			_input->joy_axis(i, JoyAxis::RIGHT_X, (float)(rightStick.x) / float(JOYSTICK_MAX));
-			_input->joy_axis(i, JoyAxis::RIGHT_Y, (float)(rightStick.y) / float(JOYSTICK_MAX));
+			_input->joy_axis(i, JoyAxis::RIGHT_Y, -(float)(rightStick.y) / float(JOYSTICK_MAX));
 		}
 	}
 }

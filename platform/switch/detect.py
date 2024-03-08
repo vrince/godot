@@ -45,7 +45,7 @@ def get_opts():
         BoolVariable("fontconfig", "Use fontconfig for system fonts support", False),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", False),
         BoolVariable("x11", "Enable X11 display", False),
-        BoolVariable("touch", "Enable touch events", False),
+        BoolVariable("touch", "Enable touch events", True),
     ]
 
 
