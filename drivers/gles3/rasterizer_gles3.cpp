@@ -274,12 +274,10 @@ RasterizerGLES3::RasterizerGLES3() {
 				ERR_PRINT("Can't create shader cache folder, no shader caching will happen: " + shader_cache_dir);
 			} else {
 				shader_cache_dir = shader_cache_dir.path_join("shader_cache");
-
 				bool shader_cache_enabled = GLOBAL_GET("rendering/shader_compiler/shader_cache/enabled");
 				if (!Engine::get_singleton()->is_editor_hint() && !shader_cache_enabled) {
 					shader_cache_dir = String(); //disable only if not editor
 				}
-
 				if (!shader_cache_dir.is_empty()) {
 					ShaderGLES3::set_shader_cache_dir(shader_cache_dir);
 				}
